@@ -154,6 +154,12 @@ map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomInDiv);
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
+    var marker = new google.maps.Marker({
+    position: pos,
+    map: map,
+    animation: google.maps.Animation.DROP,
+    title: 'You are here'
+  });
             map.setCenter(pos);
           }, function() {
             handleLocationError(true, map.getCenter());

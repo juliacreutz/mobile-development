@@ -3,22 +3,21 @@
 <head>
 
  <!-- Allow web app to be run in full-screen mode. -->
-    <meta name="apple-mobile-web-app-capable"
-          content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
     <!-- Make the app title different than the page title. -->
-    <meta name="apple-mobile-web-app-title"
-          content="iOS 8 web app">
+    <meta name="apple-mobile-web-app-title" content="iOS 8 web app">
 
     <!-- Configure the status bar. -->
-    <meta name="apple-mobile-web-app-status-bar-style"
-          content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Set the viewport. -->
-    <meta name="viewport"
-          content="initial-scale=1">
+    <meta name="viewport" content="initial-scale=1">
     <title>Simple Map</title>
     <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 
     <style>
       /* Always set the map height explicitly to define the size of the div
@@ -50,34 +49,69 @@
       	padding-left: 5px;
       	padding-right: 5px;
       }
+
+      #splashscreen {
+        position:absolute;
+        top:0;
+        left:0;
+        bottom:0;
+        width:100%;
+        background-color:#42a1f4;
+        z-index: 1;
+        text-align: center;
+        padding-top: 50%;
+      }
+      a {
+        text-decoration: none;
+      }
+      a:hover {
+        -webkit-filter: blur(10px);
+        filter: blur(10px);
+      }
     </style>
   </head>
   <body>
+
+    <!-- splash screen before loading map -->
+    <div id="splashscreen">
+      <div class="splashscreen_content">
+        <h1>Click to enter</h1>
+        <a href="#" onclick="enterApp()"><img src="favicon.png" width="50%" height="50%"/></a>
+      </div>
+    </div>
+
     <div id="map"></div>
     <input type="button" value="here" onclick="addMarker()"></input>
     <input type="button" value="info" onclick="addInfo()"/>
     <input type="button" value="parking" onclick="addParking()"/>
     <input type="button" value="library" onclick="addLibrary()"/>
+
+    <script>
+      function enterApp() {
+        $('#splashscreen').fadeOut(500);
+      }
+    </script>
+    
     <script>
       var map;
 
       var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
-        var icons = {
-          parking: {
-            icon: iconBase + 'parking_lot_maps.png'
-          },
-          library: {
-            icon: iconBase + 'library_maps.png'
-          },
-          info: {
-            icon: iconBase + 'info-i_maps.png'
-          }
-        };
+      var icons = {
+        parking: {
+          icon: iconBase + 'parking_lot_maps.png'
+        },
+        library: {
+          icon: iconBase + 'library_maps.png'
+        },
+        info: {
+          icon: iconBase + 'info-i_maps.png'
+        }
+      };
 
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
-       /* centralen 59.3306685, 18.0557436 */
-       /* kth 59.3498092, 18.0684758 */
+          /* centralen 59.3306685, 18.0557436 */
+          /* kth 59.3498092, 18.0684758 */
           center: {lat: 59.3306685, lng: 18.0557436},
           zoom: 15,
           mapTypeId: 'hybrid',
@@ -85,81 +119,96 @@
           heading: 90,
           disableDefaultUI: true
         });
+      
+        //draggable
+        var marker = new google.maps.Marker({
+          position: {lat: 59.3311174, lng: 18.0669028},
+          map: map,
+          draggable: true,
+          animation: google.maps.Animation.DROP,
+          title: 'Drag me!'
+        });
 
-	/*//not draggable
-    var marker = new google.maps.Marker({
-    position: {lat: 59.3306685, lng: 18.0557436},
-    map: map,
-    title: 'Hello World!'
-  });*/
+        // Create a div to hold the control.
+        var zoomOutDiv = document.createElement('div');
+        var zoomInDiv = document.createElement('div');
+        var fullScreenDiv = document.createElement('div');
 
-    //draggable
-    var marker = new google.maps.Marker({
-    position: {lat: 59.3311174, lng: 18.0669028},
-    map: map,
-    draggable: true,
-    animation: google.maps.Animation.DROP,
-    title: 'Drag me!'
-  });
-    
+        // Set CSS for the control border
+        var zoomOutUI = document.createElement('div');
+        zoomOutUI.className = 'controlUI';
+        zoomOutDiv.appendChild(zoomOutUI);
 
+        var zoomInUI = document.createElement('div');
+        zoomInUI.className = 'controlUI';
+        zoomInDiv.appendChild(zoomInUI);
 
-// Create a div to hold the control.
-var zoomOutDiv = document.createElement('div');
-var zoomInDiv = document.createElement('div');
+        var fullScreenUI = document.createElement('div');
+        fullScreenUI.className = 'controlUI';
+        fullScreenDiv.appendChild(fullScreenUI);
 
-// Set CSS for the control border
-var zoomOutUI = document.createElement('div');
-zoomOutUI.className = 'controlUI';
-zoomOutDiv.appendChild(zoomOutUI);
+        // Set CSS for the control interior
+        var zoomOutText = document.createElement('div');
+        zoomOutText.className = 'controlText';
+        zoomOutUI.appendChild(zoomOutText);
+        zoomOutText.innerHTML = '-';
 
-var zoomInUI = document.createElement('div');
-zoomInUI.className = 'controlUI';
-zoomInDiv.appendChild(zoomInUI);
+        var zoomInText = document.createElement('div');
+        zoomInText.className = 'controlText';
+        zoomInUI.appendChild(zoomInText);
+        zoomInText.innerHTML = '+';
 
+        var fullScreenText = document.createElement('div');
+        fullScreenText.className = 'controlText';
+        fullScreenUI.appendChild(fullScreenText);
+        fullScreenText.innerHTML = 'O';
 
-// Set CSS for the control interior
-var zoomOutText = document.createElement('div');
-zoomOutText.className = 'controlText';
-zoomOutUI.appendChild(zoomOutText);
-zoomOutText.innerHTML = '-';
+        // Setup the click event listener: simply set the map to center on Stockholm
+        var stockholm = {lat: 59.3306685, lng: 18.0557436};
 
-var zoomInText = document.createElement('div');
-zoomInText.className = 'controlText';
-zoomInUI.appendChild(zoomInText);
-zoomInText.innerHTML = '+';
+        google.maps.event.addDomListener(zoomOutDiv, 'click', function() {
+          map.setZoom(map.getZoom() - 1);
+        });
 
+        google.maps.event.addDomListener(zoomInDiv, 'click', function() {
+          map.setZoom(map.getZoom() + 1);
+        });
 
-// Setup the click event listener: simply set the map to center on Stockholm
-var stockholm = {lat: 59.3306685, lng: 18.0557436};
+        google.maps.event.addDomListener(fullScreenDiv, 'click', function() {
+          //document.getElementById('map').style.height = '100%';
 
-google.maps.event.addDomListener(zoomOutDiv, 'click', function() {
-  map.setZoom(map.getZoom() - 1);
-});
+          var doc = window.document;
+          var docEl = doc.documentElement;
 
-google.maps.event.addDomListener(zoomInDiv, 'click', function() {
-  map.setZoom(map.getZoom() + 1);
-});
+          var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+          var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
 
-map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomOutDiv);
+          if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+            requestFullScreen.call(docEl);
+          }
+          else {
+            cancelFullScreen.call(doc);
+          }
+        });
 
-map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomInDiv);
-
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomOutDiv);
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomInDiv);
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(fullScreenDiv);
       }
 
-    function addMarker() {
-    if (navigator.geolocation) {
+      function addMarker() {
+        if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             var pos = {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
-    var marker = new google.maps.Marker({
-    position: pos,
-    map: map,
-    animation: google.maps.Animation.DROP,
-    title: 'You are here'
-  });
+            var marker = new google.maps.Marker({
+              position: pos,
+              map: map,
+              animation: google.maps.Animation.DROP,
+              title: 'You are here'
+            });
             map.setCenter(pos);
           }, function() {
             handleLocationError(true, map.getCenter());
@@ -170,34 +219,33 @@ map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomInDiv);
         }
       }
 
-    function addInfo() {
-    var marker = new google.maps.Marker({
-    position: {lat: 59.3639951, lng: 18.0383178},
-    icon: icons['info'].icon,
-    map: map,
-    animation: google.maps.Animation.DROP,
-    title: 'Information!'
-  });
+      function addInfo() {
+        var marker = new google.maps.Marker({
+          position: {lat: 59.3639951, lng: 18.0383178},
+          icon: icons['info'].icon,
+          map: map,
+          animation: google.maps.Animation.DROP,
+          title: 'Information!'
+        });
       }
-    function addParking() {
-    var marker = new google.maps.Marker({
-    position: {lat: 59.3331632, lng: 18.0653577},
-    icon: icons['parking'].icon,
-    map: map,
-    animation: google.maps.Animation.DROP,
-    title: 'Parking!'
-  });
+      function addParking() {
+        var marker = new google.maps.Marker({
+          position: {lat: 59.3331632, lng: 18.0653577},
+          icon: icons['parking'].icon,
+          map: map,
+          animation: google.maps.Animation.DROP,
+          title: 'Parking!'
+        });
       }
-    function addLibrary() {
-    var marker = new google.maps.Marker({
-    position: {lat: 59.3416033, lng: 18.0562028},
-    icon: icons['library'].icon,
-    map: map,
-    animation: google.maps.Animation.DROP,
-    title: 'Library!'
-  });
+      function addLibrary() {
+        var marker = new google.maps.Marker({
+          position: {lat: 59.3416033, lng: 18.0562028},
+          icon: icons['library'].icon,
+          map: map,
+          animation: google.maps.Animation.DROP,
+          title: 'Library!'
+        });
       }
-
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA7AvZGa_k8KJE9HJgQIAcviIKDJ6V5MpI&callback=initMap"
     async defer></script>

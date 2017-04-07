@@ -221,6 +221,12 @@
       }
 
       function addInfo() {
+        var contentString = 'Information text';
+
+        var infowindow = new google.maps.InfoWindow({
+          content: contentString
+        });
+
         var marker = new google.maps.Marker({
           position: {lat: 59.3639951, lng: 18.0383178},
           icon: icons['info'].icon,
@@ -228,6 +234,9 @@
           animation: google.maps.Animation.DROP,
           title: 'Information!'
         });
+        marker.addListener('click', function() {
+          infowindow.open(map, marker);
+        })
       }
       function addParking() {
         var marker = new google.maps.Marker({

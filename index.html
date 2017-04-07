@@ -133,6 +133,10 @@
         var zoomOutDiv = document.createElement('div');
         var zoomInDiv = document.createElement('div');
         var fullScreenDiv = document.createElement('div');
+        var upDiv = document.createElement('div');
+        var downDiv = document.createElement('div');
+        var leftDiv = document.createElement('div');
+        var rightDiv = document.createElement('div');
 
         // Set CSS for the control border
         var zoomOutUI = document.createElement('div');
@@ -146,6 +150,22 @@
         var fullScreenUI = document.createElement('div');
         fullScreenUI.className = 'controlUI';
         fullScreenDiv.appendChild(fullScreenUI);
+
+        var upUI = document.createElement('div');
+        upUI.className = 'controlUI';
+        upDiv.appendChild(upUI);
+
+        var downUI = document.createElement('div');
+        downUI.className = 'controlUI';
+        downDiv.appendChild(downUI);
+
+        var leftUI = document.createElement('div');
+        leftUI.className = 'controlUI';
+        leftDiv.appendChild(leftUI);
+
+        var rightUI = document.createElement('div');
+        rightUI.className = 'controlUI';
+        rightDiv.appendChild(rightUI);
 
         // Set CSS for the control interior
         var zoomOutText = document.createElement('div');
@@ -163,6 +183,26 @@
         fullScreenUI.appendChild(fullScreenText);
         fullScreenText.innerHTML = 'O';
 
+        var upText = document.createElement('div');
+        upText.className = 'controlText';
+        upUI.appendChild(upText);
+        upText.innerHTML = 'N';
+
+        var downText = document.createElement('div');
+        downText.className = 'controlText';
+        downUI.appendChild(downText);
+        downText.innerHTML = 'S';
+
+        var leftText = document.createElement('div');
+        leftText.className = 'controlText';
+        leftUI.appendChild(leftText);
+        leftText.innerHTML = 'W';
+
+        var rightText = document.createElement('div');
+        rightText.className = 'controlText';
+        rightUI.appendChild(rightText);
+        rightText.innerHTML = 'E';
+
         // Setup the click event listener: simply set the map to center on Stockholm
         var stockholm = {lat: 59.3306685, lng: 18.0557436};
 
@@ -172,6 +212,26 @@
 
         google.maps.event.addDomListener(zoomInDiv, 'click', function() {
           map.setZoom(map.getZoom() + 1);
+        });
+
+        google.maps.event.addDomListener(upDiv, 'click', function() {
+          var pos = {lat: map.getCenter().lat() + 0.001, lng: map.getCenter().lng()}
+          map.setCenter(pos);
+        });
+
+        google.maps.event.addDomListener(downDiv, 'click', function() {
+          var pos = {lat: map.getCenter().lat() - 0.001, lng: map.getCenter().lng()}
+          map.setCenter(pos);
+        });
+
+        google.maps.event.addDomListener(leftDiv, 'click', function() {
+          var pos = {lat: map.getCenter().lat(), lng: map.getCenter().lng() - 0.001}
+          map.setCenter(pos);
+        });
+
+        google.maps.event.addDomListener(rightDiv, 'click', function() {
+          var pos = {lat: map.getCenter().lat(), lng: map.getCenter().lng() + 0.001}
+          map.setCenter(pos);
         });
 
         google.maps.event.addDomListener(fullScreenDiv, 'click', function() {
@@ -194,6 +254,10 @@
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomOutDiv);
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomInDiv);
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(fullScreenDiv);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(upDiv);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(downDiv);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(leftDiv);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(rightDiv);
       }
 
 //all buttons work on iPhone 6 + Samsung j7

@@ -196,8 +196,9 @@
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(fullScreenDiv);
       }
 
-      function addMarker() {
-        if (navigator.geolocation) {
+//all buttons work on iPhone 6 + Samsung j7
+    function addMarker() {
+    if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             var pos = {
               lat: position.coords.latitude,

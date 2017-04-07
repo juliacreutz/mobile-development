@@ -1,0 +1,22 @@
+{
+  "uuid": "8ca0d081-8808-4f29-840a-b4bbe1dc2ddc",
+  "plugins": [
+    {
+      "name": "cordova-plugin-ibeacon",
+      "version": "3.4.3"
+    },
+    {
+      "name": "phonegap-nfc"
+    }
+  ],
+  "libraries": [],
+  "name": "relaxation-beacons",
+  "title": "Relaxation iBeacons",
+  "description": "App oneline description.",
+  "long-description": "App long description.",
+  "version": "",
+  "author-name": "Evothings",
+  "author-email": "build@evothings.com",
+  "author-url": "https://evothings.com",
+  "cordova-id": "com.evothings.samples.relaxation.beacons"
+}

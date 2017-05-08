@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)http://evothings.com/demos/dome_pics/index.html -->
+<html class="ui-mobile"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!--<base href="http://evothings.com/demos/dome_pics/index.html">--><base href=".">
+
+    
+    <meta name="viewport" content="width=device-width, user-scalable=no,
+        shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+
+    <title>Getting some data from a json API</title>
+
+     <link rel="stylesheet"  href="http://code.jquery.com/mobile/git/jquery.mobile-git.css" /> 
+  <link rel="stylesheet" href="https://rawgithub.com/arschmitz/jquery-mobile-datepicker-wrapper/master/jquery.mobile.datepicker.css" />
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script> 
+  <script src="https://rawgithub.com/jquery/jquery-ui/1-10-stable/ui/jquery.ui.datepicker.js"></script>
+  <script src="http://code.jquery.com/mobile/git/jquery.mobile-git.js"></script> 
+  <script src="https://rawgithub.com/arschmitz/jquery-mobile-datepicker-wrapper/master/jquery.mobile.datepicker.js"></script>
+
+    <link rel="stylesheet" href="./js/jquery.mobile-1.4.5.css">
+    <script src="./js/jquery-2.1.1.min.js"></script>
+    <script src="./js/jquery.mobile-1.4.5.js"></script>
+
+    <!-- This script, cordova.js,  is built into Evothings Viewer (i.e. you won't need to add this file to your project) The idea is to pick up a http resource, even if you're using https, which would normally create a cross-protocol violation. The HTTP plug-in from Apache Cordova allows this to be carried out, see especially this post: https://evothings.com/evothings-secured-now-serving-over-https/ -->
+    <script>
+        // Redirect console.log to Evothings Workbench.
+        if (window.hyper && window.hyper.log) { console.log = hyper.log }
+    </script>
+
+    <script src="./js/cordova.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<body class="ui-mobile-viewport ui-overlay-a">
+    <div data-role="page" data-url="/demos/dome_pics/index.html" tabindex="0" class="ui-page ui-page-theme-a ui-page-active" style="min-height: 736px;">
+    
+        <script>
+
+        // Create an empty sensor object as a global 
+        var sensor = {};
+
+        // Where the sensor data is stored
+        var mSensorDataURL = 'http://smartspaces.r1.kth.se:8082/output/';
+
+        // // A subscriber's key (Five other keys also availble at http://smartspaces.r1.kth.se:8082)
+        // sensor.key = "J3Wgj9qegGFX4r9KlxxGfaeMXQB";
+
+        // // A bitmap image describing where the sensor is located
+        // sensor.image = "https://evothings.com/demos/dome_pics/IMG_1758.JPG";
+
+        // the different sensors
+        var mSensors = {
+            1: { 
+                "key":"BQa4EqqbgxfMgpBQ8XwNhvP82Dj",
+                "image":"https://evothings.com/demos/dome_pics/IMG_1758.JPG"
+            },
+            2: { 
+                "key":"J3Wgj9qegGFX4r9KlxxGfaeMXQB",
+                "image":"https://evothings.com/demos/dome_pics/IMG_1759.JPG"
+            },
+            3: { 
+                "key":"lB6p49pzXdFGQjpLwzzOTWj10rd",
+                "image":"https://evothings.com/demos/dome_pics/IMG_1762.JPG"
+            },
+            4: {
+                "key":"L4D98lO9ObtOdzx3PggKIaWmMGA",
+                "image":"https://evothings.com/demos/dome_pics/IMG_1763.JPG"
+            },
+            5: {
+                "key":"LAjQ9E8PBOiOdzx3PggKIaWmMGA",
+                "image":"https://evothings.com/demos/dome_pics/IMG_1761.JPG"
+            },
+            6: { 
+                "key":"BkPNOapq2WSMgpVlNQQKFYXPBWr",
+                "image":"https://evothings.com/demos/dome_pics/IMG_1760.JPG"
+            }
+        };
+
+        // global variables so they can be used everywhere
+        var dayDiff = 0;
+        var currentSensor;
+
+        // Function to retrieve data, placing it in a "response" object
+        function getJSON(index) {
+            currentSensor = index;
+            if (window.cordova) {
+                console.log('Using Apache Cordova HTTP GET function');
+                cordovaHTTP.get(
+                    mSensorDataURL + mSensors[index].key + '.json?limit=50&lt[timestamp]=now-' + dayDiff + 'day',
+                    function (response) {
+                        if (response) {
+                            sensor.data = JSON.parse(response.data)[0];
+                            sensor.fullData = JSON.parse(response.data);
+                            sensor.image = mSensors[index].image;
+                            printData();
+                        }
+                    },
+                    function (error) {
+                        console.log(JSON.stringify(error));
+                    }
+                );
+            } else {
+                console.log('Not using Cordova, fallback to AJAX via jquery');
+                $.ajax({
+                    url: mSensorDataURL + sensor.key + '.json?limit=50&lt[timestamp]=now-' + dayDiff + 'day',
+                    jsonp: "callback",
+                    cache: true,
+                    dataType: "jsonp",
+                    data: {
+                        page: 1
+                    },
+                    success: function(response) {
+                        if (response && response[0]) {
+                            sensor.data = response[0];
+                            sensor.fullData = response;
+                            printData();
+                        }
+                    }
+                });
+            }
+        }
+
+        function printData() {
+            // calling that to clear the graph. It has been defined in main.js
+            resetGraph();
+
+            if (sensor && sensor.data) {
+
+                // Display the info.
+                html = '<h1>Sensor Data</h1>'
+                         + '<br /><div id="time">Recorded time from  ' + sensor.fullData[sensor.fullData.length - 1].timestamp + '</div>'
+                         + '<br /><div id="time">to  ' + sensor.data.timestamp + '</div>'
+                         // + '<div id="hum">Humidity ' + sensor.data.h + ' % (rel)</div>'
+                         // + '<div id="temp">Temperature ' + sensor.data.t + ' celcius</div>'
+                         // + '<img src="' + sensor.image + '" />'
+                
+                // calls the function in the main.js file
+                setupGraph();
+              }
+
+            else 
+                    {
+                        html = '<h1>Sensor Data</h1>'
+                         + '<br />Sorry, sensor data not available right now :(</br>'
+                         // + '<img src="' + sensor.image + '" />'
+                    }
+            document.getElementById("printHere").innerHTML= html;
+            }
+
+
+            function newDate(event) {
+                // event is the name we give to the parameter here (could have been anything else)
+                // when the function is called in the html, we pass "this" as parameter, which represent the currents object, so the <input> object
+                var now = new Date();
+                var selectedDate = new Date(event.value);
+                var timeDiff = Math.abs(now.getTime() - selectedDate.getTime());
+                dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+                getJSON(currentSensor);
+            };
+
+        </script>
+
+        <button onclick="history.back()" class=" ui-btn ui-shadow ui-corner-all">Exit</button><br>
+        <button onclick="getJSON(1);" class=" ui-btn ui-shadow ui-corner-all">Sensor #1</button>
+        <button onclick="getJSON(2);" class=" ui-btn ui-shadow ui-corner-all">Sensor #2</button>
+        <button onclick="getJSON(3);" class=" ui-btn ui-shadow ui-corner-all">Sensor #3</button>
+        <button onclick="getJSON(4);" class=" ui-btn ui-shadow ui-corner-all">Sensor #4</button>
+        <button onclick="getJSON(5);" class=" ui-btn ui-shadow ui-corner-all">Sensor #5</button>
+        <button onclick="getJSON(6);" class=" ui-btn ui-shadow ui-corner-all">Sensor #6</button>
+        Date: <input type="text" data-role="date" id="dateText" onchange="newDate(this)"/>
+        <div id="printHere"></div>
+        <div id="chart"></div>
+    </div>
+
+    <div class="ui-loader ui-corner-all ui-body-a ui-loader-default">
+        <span class="ui-icon-loading"></span>
+        <h1>loading</h1>
+    </div>
+
+    <script src="./js/main.js"></script>
+</body>
+</html>
